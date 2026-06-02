@@ -1,11 +1,13 @@
 const { Router } = require('express');
-const { auth, isVendor, isAdmin } = require('../middlewares/auth');
-const ctrl = require('../controllers/restaurant.controller');
+const restaurantController = require('../controllers/restaurant.controller');
+const { protect, restrictTo } = require('../middlewares/auth');
+
 const router = Router();
 
-router.get('/', ctrl.list);
-router.post('/', auth, isVendor, ctrl.create);
-router.put('/:id', auth, ctrl.update);           // vendor owner or admin
-router.patch('/:id', auth, ctrl.update);
+router.get('/', restaurantController.listRestaurants);
+router.get('/:slug', restaurantController.getRestaurantDetails);
+
+router.post('/', protect, restrictTo('vendor', 'admin'), restaurantController.createRestaurant);
+router.put('/:id', protect, restrictTo('vendor', 'admin'), restaurantController.updateRestaurant);
 
 module.exports = router;

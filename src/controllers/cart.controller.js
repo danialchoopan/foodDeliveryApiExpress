@@ -1,38 +1,53 @@
-const svc = require('../services/cart.service');
+const { Cart } = require('../models');
 
-exports.getMyCart = async (req, res, next) => {
-  try { res.json(await svc.getMyCart(req.user.id, req.query.restaurantId)); }
-  catch (e) { next(e); }
+exports.getCart = async (req, res, next) => {
+  try {
+    let cart = await Cart.findOne({ userId: req.user._id });
+    if (!cart) cart = await Cart.create({ userId: req.user._id, items: [] });
+    res.json(cart);
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.addItem = async (req, res, next) => {
   try {
-    const { restaurantId } = req.body;
-    const cart = await svc.addItem(req.user.id, restaurantId, req.body);
-    res.status(201).json(cart);
-  } catch (e) { next(e); }
-};
+    const { itemId, quantity } = req.body;
+    let cart = await Cart.findOne({ userId: req.user._id });
+    if (!cart) cart = new Cart({ userId: req.user._id, items: [] });
 
-exports.updateItem = async (req, res, next) => {
-  try {
-    const { restaurantId, quantity } = req.body;
-    const cart = await svc.updateItem(req.user.id, restaurantId, req.params.itemId, quantity);
+    const itemIndex = cart.items.findIndex(item => item.itemId.toString() === itemId);
+    if (itemIndex > -1) {
+      cart.items[itemIndex].quantity += quantity;
+    } else {
+      cart.items.push({ itemId, quantity });
+    }
+
+    await cart.save();
     res.json(cart);
-  } catch (e) { next(e); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.removeItem = async (req, res, next) => {
   try {
-    const { restaurantId } = req.body;
-    const cart = await svc.removeItem(req.user.id, restaurantId, req.params.itemId);
+    const cart = await Cart.findOne({ userId: req.user._id });
+    if (cart) {
+      cart.items = cart.items.filter(item => item.itemId.toString() !== req.params.itemId);
+      await cart.save();
+    }
     res.json(cart);
-  } catch (e) { next(e); }
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.clear = async (req, res, next) => {
+exports.clearCart = async (req, res, next) => {
   try {
-    const { restaurantId } = req.body;
-    const cart = await svc.clear(req.user.id, restaurantId);
-    res.json(cart);
-  } catch (e) { next(e); }
+    await Cart.findOneAndUpdate({ userId: req.user._id }, { items: [] });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
 };

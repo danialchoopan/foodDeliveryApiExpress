@@ -6,13 +6,12 @@ const OrderItemSchema = new Schema({
   titleSnapshot: String,
   priceSnapshot: { type: Number, required: true, min: 0 },
   quantity: { type: Number, default: 1, min: 1 },
-  selectedOptions: [{ group: String, choice: String, priceDiff: Number }]
 }, { _id: false });
 
 const StatusHistorySchema = new Schema({
   status: { 
     type: String, 
-    enum: ['pending','accepted','preparing','ready','out_for_delivery','delivered','canceled','refunded'], 
+    enum: ['pending', 'accepted', 'preparing', 'ready', 'searching_courier', 'courier_assigned', 'picked_up', 'delivered', 'canceled'],
     required: true 
   },
   by: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -22,6 +21,7 @@ const StatusHistorySchema = new Schema({
 const OrderSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   restaurantId: { type: Schema.Types.ObjectId, ref: 'Restaurant', required: true, index: true },
+  courierId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   items: { type: [OrderItemSchema], default: [] },
   pricing: {
     subtotal: { type: Number, default: 0 },
@@ -30,18 +30,20 @@ const OrderSchema = new Schema({
     total: { type: Number, required: true, min: 0 }
   },
   delivery: {
-    type: { type: String, enum: ['delivery','pickup'], default: 'delivery' },
-    addressSnapshot: {},
-    geo: { type: { type: String, enum: ['Point'] }, coordinates: [Number] }
+    address: String,
+    geo: {
+      type: { type: String, enum: ['Point'], default: 'Point' },
+      coordinates: { type: [Number], required: true }
+    }
   },
   payment: { 
     status: { type: String, enum: ['unpaid','paid','refunded'], default: 'unpaid' }, 
-    provider: String, 
-    ref: String 
+    method: { type: String, enum: ['online', 'wallet', 'cod'], default: 'online' },
+    transactionId: String
   },
   status: { 
     type: String, 
-    enum: ['pending','accepted','preparing','ready','out_for_delivery','delivered','canceled','refunded'], 
+    enum: ['pending', 'accepted', 'preparing', 'ready', 'searching_courier', 'courier_assigned', 'picked_up', 'delivered', 'canceled'],
     default: 'pending', 
     index: true 
   },
@@ -50,5 +52,6 @@ const OrderSchema = new Schema({
 }, { timestamps: true });
 
 OrderSchema.index({ restaurantId: 1, placedAt: -1 });
+OrderSchema.index({ courierId: 1, status: 1 });
 
 module.exports = mongoose.model('Order', OrderSchema);

@@ -1,27 +1,37 @@
 const jwt = require('jsonwebtoken');
 const { env } = require('../config/env');
+const { User } = require('../models');
 
-module.exports.auth = (req, res, next) => {
+exports.protect = async (req, res, next) => {
   try {
-    const hdr = req.headers.authorization || '';
-    const token = hdr.startsWith('Bearer ') ? hdr.slice(7) : null;
-    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
 
-    const payload = jwt.verify(token, env.jwtSecret);
-    req.user = { id: payload.sub, role: payload.role || 'customer' };
+    if (!token) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const decoded = jwt.verify(token, env.jwtSecret);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    req.user = user;
     next();
-  } catch (e) {
-    return res.status(401).json({ message: 'Invalid token' });
+  } catch (err) {
+    res.status(401).json({ message: 'Not authorized' });
   }
 };
 
-module.exports.isAdmin = (req, res, next) => {
-  if (req.user?.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
-  next();
-};
-
-module.exports.isVendor = (req, res, next) => {
-  if (req.user?.role !== 'vendor' && req.user?.role !== 'admin')
-    return res.status(403).json({ message: 'Forbidden' });
-  next();
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    next();
+  };
 };

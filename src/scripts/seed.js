@@ -1,78 +1,115 @@
 require('dotenv').config();
+const mongoose = require('mongoose');
+const { User, Restaurant, MenuItem, MenuCategory, Wallet } = require('../models');
 const bcrypt = require('bcryptjs');
-const { connect } = require('../config/db');
-const { User, Restaurant, MenuCategory, MenuItem } = require('../models');
 
-(async () => {
+const seed = async () => {
   try {
-    await connect();
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/food_order_api');
+    console.log('Connected to DB for seeding...');
 
-    // Admin
-    let admin = await User.findOne({ email: 'admin@example.com' });
-    if (!admin) {
-      admin = await User.create({
-        fullName: 'Admin User',
-        email: 'admin@example.com',
-        passwordHash: await bcrypt.hash('admin123', 10),
-        role: 'admin'
-      });
-      console.log('Admin created: admin@example.com / admin123');
-    }
+    // Clear existing data
+    await Promise.all([
+      User.deleteMany({}),
+      Restaurant.deleteMany({}),
+      MenuItem.deleteMany({}),
+      MenuCategory.deleteMany({}),
+      Wallet.deleteMany({})
+    ]);
 
-    // Vendor
-    let vendor = await User.findOne({ email: 'vendor@example.com' });
-    if (!vendor) {
-      vendor = await User.create({
-        fullName: 'Vendor User',
-        email: 'vendor@example.com',
-        passwordHash: await bcrypt.hash('vendor123', 10),
-        role: 'vendor'
-      });
-      console.log('Vendor created: vendor@example.com / vendor123');
-    }
+    const passwordHash = await bcrypt.hash('password123', 10);
 
-    // Restaurant
-    let rest = await Restaurant.findOne({ owner: vendor._id });
-    if (!rest) {
-      rest = await Restaurant.create({
+    // Create Users
+    const admin = await User.create({
+      fullName: 'مدیر کل',
+      email: 'admin@foodghaza.ir',
+      passwordHash,
+      phone: '09120000000',
+      role: 'admin'
+    });
+
+    const vendor = await User.create({
+      fullName: 'مدیر رستوران نایب',
+      email: 'nayeb@foodghaza.ir',
+      passwordHash,
+      phone: '09121111111',
+      role: 'vendor'
+    });
+
+    const customer = await User.create({
+      fullName: 'علی علوی',
+      email: 'ali@gmail.com',
+      passwordHash,
+      phone: '09122222222',
+      role: 'customer',
+      addresses: [{
+        label: 'خانه',
+        line1: 'سعادت آباد، خیابان سرو',
+        city: 'تهران',
+        geo: { type: 'Point', coordinates: [51.378, 35.776] }
+      }]
+    });
+
+    const courier = await User.create({
+        fullName: 'رضا پیکی',
+        email: 'reza@foodghaza.ir',
+        passwordHash,
+        phone: '09123333333',
+        role: 'courier'
+    });
+
+    await Wallet.create([{ userId: admin._id }, { userId: vendor._id }, { userId: customer._id, balance: 500000 }, { userId: courier._id }]);
+
+    // Create Restaurants
+    const res1 = await Restaurant.create({
+      owner: vendor._id,
+      name: 'رستوران نایب',
+      description: 'ارائه دهنده بهترین کباب‌های سنتی با برنج ایرانی',
+      category: 'کباب',
+      status: 'active',
+      rating: 4.8,
+      image: 'https://cdn.snappfood.ir/media/cache/vendor_item_cover/uploads/images/vendors/covers/64772b97950c4.jpg',
+      locations: [{
+        label: 'شعبه مرکزی',
+        address: 'خیابان ولیعصر، نرسیده به میدان ونک',
+        geo: { type: 'Point', coordinates: [51.41, 35.75] }
+      }]
+    });
+
+    const res2 = await Restaurant.create({
         owner: vendor._id,
-        name: 'رستوران نمونه',
-        description: 'سفارش آنلاین غذا',
-        tags: ['ایرانی','کباب'],
-        isOpen: true,
-        locations: [{ label: 'مرکزی', address: 'ت// 0=Sunهران', phone: '021-0000' }]
-      });
-      console.log('✅ Restaurant created:', rest.name);
-    }
+        name: 'پیتزا سیب ۳۶۰',
+        description: 'پیتزاهای حجیم و با کیفیت',
+        category: 'پیتزا',
+        status: 'active',
+        rating: 4.5,
+        image: 'https://cdn.snappfood.ir/media/cache/vendor_item_cover/uploads/images/vendors/covers/645367123612d.jpg',
+        locations: [{
+          label: 'شعبه سعادت آباد',
+          address: 'بلوار پاکنژاد',
+          geo: { type: 'Point', coordinates: [51.37, 35.78] }
+        }]
+    });
 
-    // Categories
-    const cats = await MenuCategory.find({ restaurantId: rest._id });
-    if (cats.length === 0) {
-      const mains = await MenuCategory.create({ restaurantId: rest._id, name: 'غذای اصلی', sortOrder: 1 });
-      const drinks = await MenuCategory.create({ restaurantId: rest._id, name: 'نوشیدنی', sortOrder: 2 });
-      console.log('✅ Categories created');
+    // Create Categories & Items
+    const cat1 = await MenuCategory.create({ restaurantId: res1._id, title: 'کباب‌ها' });
+    await MenuItem.create([
+      { restaurantId: res1._id, categoryId: cat1._id, title: 'چلو کباب کوبیده مخصوص', price: 280000, description: 'دو سیخ کباب کوبیده ۱۸۰ گرمی + برنج ایرانی' },
+      { restaurantId: res1._id, categoryId: cat1._id, title: 'چلو کباب برگ', price: 450000, description: 'یک سیخ کباب برگ گوسفندی + برنج ایرانی' }
+    ]);
 
-      // Items
-      await MenuItem.create({
-        restaurantId: rest._id, categoryId: mains._id,
-        title: 'چلوکباب',
-        description: 'چلو، کباب کوبیده، گوجه',
-        price: 280000,
-        options: [{ name: 'نوشابه', required: false, choices: [{ label: 'کوکا', priceDiff: 15000 }] }]
-      });
-      await MenuItem.create({
-        restaurantId: rest._id, categoryId: drinks._id,
-        title: 'دوغ',
-        description: 'دوغ سنتی',
-        price: 35000
-      });
-      console.log('Items created');
-    }
+    const cat2 = await MenuCategory.create({ restaurantId: res2._id, title: 'پیتزا پنجره‌ای' });
+    await MenuItem.create([
+      { restaurantId: res2._id, categoryId: cat2._id, title: 'پیتزا پپرونی', price: 220000, description: 'پپرونی، پنیر موتزارلا، سس مخصوص' },
+      { restaurantId: res2._id, categoryId: cat2._id, title: 'پیتزا مخصوص سیب', price: 260000, description: 'ژامبون، قارچ، فلفل دلمه، پنیر' }
+    ]);
 
-    console.log('Seed done');
+    console.log('Seeding completed successfully!');
     process.exit(0);
-  } catch (e) {
-    console.error('Seed failed:', e);
+  } catch (err) {
+    console.error('Seeding error:', err);
     process.exit(1);
   }
-})();
+};
+
+seed();

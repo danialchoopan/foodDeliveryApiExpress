@@ -1,35 +1,47 @@
-# Food Order API (Node.js + Express.js + MongoDB/Mongoose)
+# فودغذا فروش (FoodGhaza Forosh)
 
-## Tech
-- Node.js, Express
-- MongoDB, Mongoose (Indexes, Embeds, Refs)
-- JWT Auth + Role-based Access
+سامانه جامع سفارش آنلاین غذا مشابه تپسی‌فود.
 
-## Run
+## ویژگی‌ها
+- **کاربران:** احراز هویت OTP، موقعیت‌محوری، جستجو و فیلتر، سبد خرید، پیگیری زنده.
+- **رستوران‌ها:** مدیریت منو، داشبورد سفارشات، مدیریت مالی.
+- **پیک‌ها:** مدیریت وضعیت، مسیریابی، گزارش درآمد.
+- **پنل مدیریت:** آمار کلی، تایید رستوران‌ها، مدیریت کوپن‌ها.
+
+## تکنولوژی‌ها
+- Node.js & Express
+- MongoDB & Mongoose
+- Tailwind CSS (Local)
+- Vazirmatn Font (Local)
+- JWT for Authentication
+
+## راه اندازی
+۱. نصب وابستگی‌ها:
 ```bash
-npm i
-cp .env.example .env
-npm run dev
+npm install
 ```
-
-## Seed (اختیاری)
+۲. تنظیمات محیطی در فایل `.env`.
+۳. اجرای سیدر (در صورت دسترسی به دیتابیس):
 ```bash
 npm run seed
-# Admin: admin@example.com / admin123
-# Vendor: vendor@example.com / vendor123
+```
+۴. اجرای پروژه:
+```bash
+npm start
 ```
 
+## نمای پروژه
+صفحه اصلی شامل لیست رستوران‌ها، دسته‌بندی‌ها و جستجو است. طراحی کاملا ریسپانسیو و منطبق بر استانداردهای تپسی‌فود انجام شده است.
 
-## Key Endpoints
-- `POST /api/auth/register|login|me`
-- `GET/POST /api/restaurants`
-- `GET/POST /api/menus/:restaurantId/categories`
-- `GET/POST /api/menus/:restaurantId/items`
-- `GET /api/carts/me`, `POST /api/carts/me/items`, `POST /api/orders/from-cart`
-- `GET /api/admin/orders`, `PATCH /api/admin/orders/:id/status`
+![نمای صفحه اصلی](https://raw.githubusercontent.com/placeholder/foodghaza/main/screenshot.png)
+*(تصویر بالا شبیه‌سازی شده است. برای مشاهده محتوای واقعی، پروژه را اجرا کنید)*
 
-## Structure
-- `src/models` 
-- `src/services` 
-- `src/controllers` 
-- `src/routes` 
+## ساختار دیتابیس
+- `Users`: کاربران با نقش‌های مختلف
+- `Restaurants`: اطلاعات رستوران و وضعیت تایید
+- `MenuItems`: منوی غذاها
+- `Orders`: سفارشات و تاریخچه وضعیت
+- `Wallets`: کیف پول دیجیتال
+
+---
+طراحی شده با ❤️ برای فودغذا فروش
