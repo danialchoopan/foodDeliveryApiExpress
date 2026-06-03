@@ -8,7 +8,6 @@ const seed = async () => {
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/food_order_api');
     console.log('Connected to DB for seeding...');
 
-    // Clear existing data
     await Promise.all([
       User.deleteMany({}),
       Restaurant.deleteMany({}),
@@ -19,92 +18,123 @@ const seed = async () => {
 
     const passwordHash = await bcrypt.hash('password123', 10);
 
-    // Create Users
-    const admin = await User.create({
-      fullName: 'مدیر کل',
-      email: 'admin@foodghaza.ir',
-      passwordHash,
-      phone: '09120000000',
-      role: 'admin'
-    });
-
     const vendor = await User.create({
-      fullName: 'مدیر رستوران نایب',
-      email: 'nayeb@foodghaza.ir',
+      fullName: 'مدیر رستوران‌های زنجیره‌ای',
+      email: 'vendor@foodghaza.ir',
       passwordHash,
       phone: '09121111111',
       role: 'vendor'
     });
 
-    const customer = await User.create({
-      fullName: 'علی علوی',
-      email: 'ali@gmail.com',
-      passwordHash,
-      phone: '09122222222',
-      role: 'customer',
-      addresses: [{
-        label: 'خانه',
-        line1: 'سعادت آباد، خیابان سرو',
-        city: 'تهران',
-        geo: { type: 'Point', coordinates: [51.378, 35.776] }
-      }]
-    });
-
-    const courier = await User.create({
-        fullName: 'رضا پیکی',
-        email: 'reza@foodghaza.ir',
-        passwordHash,
-        phone: '09123333333',
-        role: 'courier'
-    });
-
-    await Wallet.create([{ userId: admin._id }, { userId: vendor._id }, { userId: customer._id, balance: 500000 }, { userId: courier._id }]);
-
-    // Create Restaurants
-    const res1 = await Restaurant.create({
-      owner: vendor._id,
-      name: 'رستوران نایب',
-      description: 'ارائه دهنده بهترین کباب‌های سنتی با برنج ایرانی',
-      category: 'کباب',
-      status: 'active',
-      rating: 4.8,
-      image: 'https://cdn.snappfood.ir/media/cache/vendor_item_cover/uploads/images/vendors/covers/64772b97950c4.jpg',
-      locations: [{
-        label: 'شعبه مرکزی',
-        address: 'خیابان ولیعصر، نرسیده به میدان ونک',
-        geo: { type: 'Point', coordinates: [51.41, 35.75] }
-      }]
-    });
-
-    const res2 = await Restaurant.create({
-        owner: vendor._id,
-        name: 'پیتزا سیب ۳۶۰',
-        description: 'پیتزاهای حجیم و با کیفیت',
+    const restaurantsData = [
+      {
+        name: 'رستوران نایب (سهروردی)',
+        description: 'ارائه دهنده بهترین کباب‌های سنتی با برنج ۱۰۰٪ ایرانی',
+        category: 'کباب',
+        rating: 4.8,
+        image: 'https://cdn.snappfood.ir/media/cache/vendor_item_cover/uploads/images/vendors/covers/64772b97950c4.jpg',
+        menu: [
+            { cat: 'چلو کباب', items: [
+                { title: 'چلو کباب کوبیده مخصوص', price: 320000, description: 'دو سیخ کوبیده ۱۸۰ گرمی' },
+                { title: 'چلو کباب لقمه زعفرانی', price: 350000, description: 'یک سیخ لقمه ۲۲۰ گرمی' }
+            ]}
+        ]
+      },
+      {
+        name: 'پیتزا سیب ۳۶۰ (سعادت‌آباد)',
+        description: 'تجربه پیتزاهای مثلثی و حجیم با بهترین پنیر',
         category: 'پیتزا',
-        status: 'active',
-        rating: 4.5,
+        rating: 4.6,
         image: 'https://cdn.snappfood.ir/media/cache/vendor_item_cover/uploads/images/vendors/covers/645367123612d.jpg',
-        locations: [{
-          label: 'شعبه سعادت آباد',
-          address: 'بلوار پاکنژاد',
-          geo: { type: 'Point', coordinates: [51.37, 35.78] }
-        }]
-    });
+        menu: [
+            { cat: 'پیتزا پنجره‌ای', items: [
+                { title: 'پیتزا پپرونی', price: 245000, description: 'پپرونی تند، پنیر فراوان' },
+                { title: 'پیتزا مخصوص سیب', price: 280000, description: 'ترکیب ژامبون و سبزیجات' }
+            ]}
+        ]
+      },
+      {
+        name: 'برگر هیزمی ۱۷',
+        description: 'برگرهای ذغالی با طعم واقعی گوشت تازه',
+        category: 'برگر',
+        rating: 4.2,
+        image: 'https://cdn.snappfood.ir/media/cache/vendor_item_cover/uploads/images/vendors/covers/644799066666a.jpg',
+        menu: [
+            { cat: 'برگرها', items: [
+                { title: 'چیزبرگر مخصوص', price: 210000, description: '۱۸۰ گرم گوشت، پنیر گودا' },
+                { title: 'ماشروم برگر', price: 230000, description: 'برگر با سس قارچ و خامه' }
+            ]}
+        ]
+      },
+      {
+        name: 'سوخاری چاکوچ',
+        description: 'جوجه سوخاری کامل و ترد با ادویه مخصوص',
+        category: 'سوخاری',
+        rating: 4.4,
+        image: 'https://cdn.snappfood.ir/media/cache/vendor_item_cover/uploads/images/vendors/covers/64819d4547b74.jpg',
+        menu: [
+            { cat: 'مرغ سوخاری', items: [
+                { title: 'سوخاری ۲ تکه', price: 195000, description: '۲ تکه سینه یا ران + سیب‌زمینی' },
+                { title: 'جوجه کامل سوخاری', price: 420000, description: 'یک عدد جوجه کامل سرخ شده' }
+            ]}
+        ]
+      },
+      {
+        name: 'کافه بستنی چیمنی',
+        description: 'کیک دودکشی مجارستانی با بستنی تازه',
+        category: 'بستنی',
+        rating: 4.7,
+        image: 'https://cdn.snappfood.ir/media/cache/vendor_item_cover/uploads/images/vendors/covers/642969966b96e.jpg',
+        menu: [
+            { cat: 'چیمنی ها', items: [
+                { title: 'چیمنی پسته', price: 120000, description: 'بستنی وانیلی با مغز پسته' },
+                { title: 'چیمنی نوتلا', price: 140000, description: 'بستنی با لایه نوتلا' }
+            ]}
+        ]
+      },
+      {
+        name: 'آش و حلیم سید مهدی',
+        description: 'قدیمی‌ترین و با کیفیت‌ترین آش و حلیم تجریش',
+        category: 'ایرانی',
+        rating: 4.9,
+        image: 'https://cdn.snappfood.ir/media/cache/vendor_item_cover/uploads/images/vendors/covers/647585645524b.jpg',
+        menu: [
+            { cat: 'صبحانه و عصرانه', items: [
+                { title: 'حلیم مخصوص (یک کیلو)', price: 180000, description: 'با گوشت گوسفندی فراوان' },
+                { title: 'آش شله قلمکار', price: 160000, description: 'آش سنتی با حبوبات و گوشت' }
+            ]}
+        ]
+      }
+    ];
 
-    // Create Categories & Items
-    const cat1 = await MenuCategory.create({ restaurantId: res1._id, title: 'کباب‌ها' });
-    await MenuItem.create([
-      { restaurantId: res1._id, categoryId: cat1._id, title: 'چلو کباب کوبیده مخصوص', price: 280000, description: 'دو سیخ کباب کوبیده ۱۸۰ گرمی + برنج ایرانی' },
-      { restaurantId: res1._id, categoryId: cat1._id, title: 'چلو کباب برگ', price: 450000, description: 'یک سیخ کباب برگ گوسفندی + برنج ایرانی' }
-    ]);
+    for (const r of restaurantsData) {
+        const restaurant = await Restaurant.create({
+            owner: vendor._id,
+            name: r.name,
+            description: r.description,
+            category: r.category,
+            status: 'active',
+            rating: r.rating,
+            image: r.image,
+            locations: [{ label: 'شعبه اصلی', address: 'تهران، محله نمونه', geo: { type: 'Point', coordinates: [51.4, 35.7] } }]
+        });
 
-    const cat2 = await MenuCategory.create({ restaurantId: res2._id, title: 'پیتزا پنجره‌ای' });
-    await MenuItem.create([
-      { restaurantId: res2._id, categoryId: cat2._id, title: 'پیتزا پپرونی', price: 220000, description: 'پپرونی، پنیر موتزارلا، سس مخصوص' },
-      { restaurantId: res2._id, categoryId: cat2._id, title: 'پیتزا مخصوص سیب', price: 260000, description: 'ژامبون، قارچ، فلفل دلمه، پنیر' }
-    ]);
+        for (const m of r.menu) {
+            const category = await MenuCategory.create({ restaurantId: restaurant._id, title: m.cat });
+            for (const item of m.items) {
+                await MenuItem.create({
+                    restaurantId: restaurant._id,
+                    categoryId: category._id,
+                    title: item.title,
+                    price: item.price,
+                    description: item.description,
+                    isAvailable: true
+                });
+            }
+        }
+    }
 
-    console.log('Seeding completed successfully!');
+    console.log('Advanced seeding completed successfully!');
     process.exit(0);
   } catch (err) {
     console.error('Seeding error:', err);
