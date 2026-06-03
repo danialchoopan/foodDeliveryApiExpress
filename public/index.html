@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فودغذا فروش | سفارش آنلاین غذا</title>
+    <title>فودغذا فروش | سامانه جامع سفارش آنلاین غذا</title>
     <script src="/assets/js/tailwind.min.js"></script>
     <link rel="stylesheet" href="/assets/css/style.css">
     <style>
-        body {
-            background-color: #f9fafb;
-        }
-        .primary-color { color: #ff385c; }
+        body { background-color: #f9fafb; }
         .bg-primary { background-color: #ff385c; }
+        .text-primary { color: #ff385c; }
     </style>
 </head>
 <body>
@@ -20,13 +18,9 @@
         <header class="bg-white shadow-sm sticky top-0 z-50">
             <div class="container mx-auto px-4 py-3 flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <h1 class="text-2xl font-bold bg-primary text-white px-3 py-1 rounded-lg cursor-pointer" onclick="loadRestaurants()">فودغذا</h1>
-                    <div class="hidden md:flex items-center text-sm text-gray-600 gap-1 bg-gray-100 px-3 py-2 rounded-full cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span>تهران، محله سعادت‌آباد</span>
+                    <h1 class="text-2xl font-bold bg-primary text-white px-3 py-1 rounded-lg cursor-pointer" onclick="showView('home')">فودغذا</h1>
+                    <div id="location-bar" class="hidden md:flex items-center text-sm text-gray-600 gap-1 bg-gray-100 px-3 py-2 rounded-full cursor-pointer">
+                        <span>تهران، سعادت‌آباد</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
@@ -43,10 +37,9 @@
             </div>
         </header>
 
-        <!-- Main Content -->
         <div id="view-container">
-            <main id="home-view" class="container mx-auto px-4 py-8">
-                <!-- Hero / Categories -->
+            <!-- Home View -->
+            <main id="home-view" class="view container mx-auto px-4 py-8">
                 <section class="mb-12">
                     <div class="bg-primary rounded-3xl p-8 text-white flex flex-col md:flex-row items-center justify-between overflow-hidden relative">
                         <div class="z-10">
@@ -57,100 +50,78 @@
                                 <button onclick="searchRestaurants()" class="bg-primary px-6 py-2 rounded-xl font-bold">جستجو</button>
                             </div>
                         </div>
-                        <div class="hidden md:block">
-                            <img src="https://snappfood.ir/static/images/hero-image.png" alt="Food" class="w-80">
-                        </div>
+                        <div class="hidden md:block"><img src="https://snappfood.ir/static/images/hero-image.png" class="w-80"></div>
                     </div>
                 </section>
-
-                <!-- Categories Grid -->
-                <section class="mb-12 overflow-x-auto pb-4">
-                    <div class="flex gap-6 min-w-max">
-                        <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterByCategory('فست‌فود')">
-                            <div class="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center group-hover:shadow-md transition-all border border-gray-100">
-                                <img src="https://cdn.snappfood.ir/uploads/images/tags-modals/fastfood.png" class="w-12 h-12" alt="Fastfood">
-                            </div>
-                            <span class="font-medium text-gray-700">فست‌فود</span>
-                        </div>
-                        <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterByCategory('ایرانی')">
-                            <div class="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center group-hover:shadow-md transition-all border border-gray-100">
-                                <img src="https://cdn.snappfood.ir/uploads/images/tags-modals/iranian.png" class="w-12 h-12" alt="Iranian">
-                            </div>
-                            <span class="font-medium text-gray-700">ایرانی</span>
-                        </div>
-                        <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterByCategory('پیتزا')">
-                            <div class="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center group-hover:shadow-md transition-all border border-gray-100">
-                                <img src="https://cdn.snappfood.ir/uploads/images/tags-modals/pizza.png" class="w-12 h-12" alt="Pizza">
-                            </div>
-                            <span class="font-medium text-gray-700">پیتزا</span>
-                        </div>
-                        <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterByCategory('کباب')">
-                            <div class="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center group-hover:shadow-md transition-all border border-gray-100">
-                                <img src="https://cdn.snappfood.ir/uploads/images/tags-modals/kebab.png" class="w-12 h-12" alt="Kebab">
-                            </div>
-                            <span class="font-medium text-gray-700">کباب</span>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Restaurants List -->
-                <section>
-                    <div class="flex justify-between items-end mb-6">
-                        <h3 class="text-2xl font-bold text-gray-800">رستوران‌های برتر</h3>
-                        <a href="#" class="text-primary font-medium flex items-center gap-1">
-                            مشاهده همه
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </a>
-                    </div>
-                    <div id="restaurants-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div class="animate-pulse bg-white rounded-3xl h-64 shadow-sm border border-gray-100"></div>
-                        <div class="animate-pulse bg-white rounded-3xl h-64 shadow-sm border border-gray-100"></div>
-                        <div class="animate-pulse bg-white rounded-3xl h-64 shadow-sm border border-gray-100"></div>
-                    </div>
+                <section id="restaurants-section">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">رستوران‌های برتر</h3>
+                    <div id="restaurants-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
                 </section>
             </main>
 
-            <main id="restaurant-view" class="container mx-auto px-4 py-8 hidden">
-                <!-- Restaurant info and menu will be injected here -->
+            <!-- Restaurant Detail View -->
+            <main id="restaurant-view" class="view container mx-auto px-4 py-8 hidden"></main>
+
+            <!-- Admin Dashboard -->
+            <main id="admin-view" class="view container mx-auto px-4 py-8 hidden">
+                <h2 class="text-3xl font-bold mb-8">پنل مدیریت کل</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <p class="text-gray-500 mb-1">فروش کل</p>
+                        <h4 class="text-2xl font-bold">۴۵,۰۰۰,۰۰۰ تومان</h4>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <p class="text-gray-500 mb-1">سفارشات امروز</p>
+                        <h4 class="text-2xl font-bold">۱۲۴</h4>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <p class="text-gray-500 mb-1">رستوران‌های فعال</p>
+                        <h4 class="text-2xl font-bold">۱۸</h4>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <p class="text-gray-500 mb-1">پیک‌های آنلاین</p>
+                        <h4 class="text-2xl font-bold">۹</h4>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Vendor Dashboard -->
+            <main id="vendor-view" class="view container mx-auto px-4 py-8 hidden">
+                <h2 class="text-3xl font-bold mb-8">پنل مدیریت رستوران</h2>
+                <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                    <h3 class="text-xl font-bold mb-4">سفارشات جاری</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-2xl">
+                            <div>
+                                <p class="font-bold">سفارش #۴۵۶۲</p>
+                                <p class="text-sm text-gray-500">۲ عدد پیتزا پپرونی - علی علوی</p>
+                            </div>
+                            <button class="bg-green-500 text-white px-4 py-2 rounded-xl text-sm">تایید و آماده‌سازی</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Courier Dashboard -->
+            <main id="courier-view" class="view container mx-auto px-4 py-8 hidden">
+                <h2 class="text-3xl font-bold mb-8">پنل سفیر (پیک)</h2>
+                <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 text-center">
+                    <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">وضعیت: آنلاین</h3>
+                    <p class="text-gray-500 mb-6">در انتظار دریافت سفارش جدید...</p>
+                    <button class="bg-red-100 text-red-600 px-8 py-3 rounded-2xl font-bold">تغییر به آفلاین</button>
+                </div>
             </main>
         </div>
 
-        <!-- Footer -->
         <footer class="bg-gray-800 text-white py-12 mt-20">
             <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <h4 class="text-xl font-bold mb-4">فودغذا فروش</h4>
-                    <p class="text-gray-400 text-sm leading-relaxed">بزرگترین سامانه سفارش آنلاین غذا و محصولات سوپرمارکتی در ایران.</p>
-                </div>
-                <div>
-                    <h5 class="font-bold mb-4">خدمات مشتریان</h5>
-                    <ul class="text-gray-400 text-sm space-y-2">
-                        <li><a href="#">مرکز پشتیبانی</a></li>
-                        <li><a href="#">سوالات متداول</a></li>
-                        <li><a href="#">قوانین و مقررات</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="font-bold mb-4">کسب‌وکارها</h5>
-                    <ul class="text-gray-400 text-sm space-y-2">
-                        <li><a href="#" onclick="showPanel('vendor')">پنل فروشندگان</a></li>
-                        <li><a href="#" onclick="showPanel('courier')">پنل سفیران</a></li>
-                        <li><a href="#" onclick="showPanel('admin')">پنل مدیریت</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="font-bold mb-4">همراه ما باشید</h5>
-                    <div class="flex gap-4">
-                        <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                            <i class="fab fa-instagram"></i>
-                        </div>
-                        <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                            <i class="fab fa-twitter"></i>
-                        </div>
-                    </div>
-                </div>
+                <div><h4 class="text-xl font-bold mb-4">فودغذا فروش</h4><p class="text-gray-400 text-sm">سامانه جامع سفارش آنلاین غذا.</p></div>
+                <div><h5 class="font-bold mb-4">لینک‌های سریع</h5><ul class="text-gray-400 text-sm space-y-2"><li><a href="#" onclick="showView('admin')">پنل مدیریت</a></li><li><a href="#" onclick="showView('vendor')">پنل رستوران</a></li><li><a href="#" onclick="showView('courier')">پنل پیک</a></li></ul></div>
             </div>
         </footer>
     </div>
@@ -158,16 +129,11 @@
     <!-- Login Modal -->
     <div id="login-modal" class="fixed inset-0 bg-black/50 z-[100] hidden items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-8 relative">
-            <button onclick="closeModal()" class="absolute top-6 left-6 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
             <h3 class="text-2xl font-bold text-center mb-6">ورود یا ثبت‌نام</h3>
-            <p class="text-gray-500 text-center mb-8">شماره موبایل خود را وارد کنید</p>
             <div class="space-y-4">
-                <input type="text" id="login-phone" placeholder="09xxxxxxxxx" class="w-full bg-gray-100 border-none rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-primary/20">
-                <button onclick="performLogin()" class="w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/20">ادامه</button>
+                <input type="text" id="login-phone" placeholder="شماره موبایل" class="w-full bg-gray-100 border-none rounded-2xl px-6 py-4 outline-none">
+                <button onclick="performLogin()" class="w-full bg-primary text-white font-bold py-4 rounded-2xl">ورود</button>
+                <button onclick="closeModal()" class="w-full text-gray-400">انصراف</button>
             </div>
         </div>
     </div>
