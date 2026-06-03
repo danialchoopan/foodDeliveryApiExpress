@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-const { makeSlug } = require('../utils/slugify');
+const slugify = require('slugify');
 
 const OpeningHoursSchema = new Schema({
   day: { type: Number, min: 0, max: 6 }, // 0=Sun
@@ -23,7 +23,15 @@ const RestaurantSchema = new Schema({
   name: { type: String, required: true },
   slug: { type: String, required: true, unique: true, index: true },
   description: String,
-  tags: { type: [String], default: [] },
+  category: { type: String, required: true, index: true }, // e.g., Pizza, FastFood, Iranian
+  image: { type: String, default: '/assets/img/default-restaurant.jpg' },
+  documents: {
+    businessLicense: String,
+    idCard: String
+  },
+  status: { type: String, enum: ['pending', 'active', 'suspended'], default: 'pending', index: true },
+  rating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
   isOpen: { type: Boolean, default: true },
   openingHours: { type: [OpeningHoursSchema], default: [] },
   locations: { type: [LocationSchema], default: [] },
@@ -32,7 +40,9 @@ const RestaurantSchema = new Schema({
 RestaurantSchema.index({ 'locations.geo': '2dsphere' });
 
 RestaurantSchema.pre('validate', function(next) {
-  if (!this.slug && this.name) this.slug = makeSlug(this.name);
+  if (!this.slug && this.name) {
+    this.slug = slugify(this.name, { lower: true, strict: true });
+  }
   next();
 });
 

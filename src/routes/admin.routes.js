@@ -1,12 +1,13 @@
 const { Router } = require('express');
-const { auth, isAdmin } = require('../middlewares/auth');
-const ctrl = require('../controllers/admin.controller');
+const adminController = require('../controllers/admin.controller');
+const { protect, restrictTo } = require('../middlewares/auth');
+
 const router = Router();
 
-router.get('/users', auth, isAdmin, ctrl.listUsers);
-router.get('/orders', auth, isAdmin, ctrl.listOrders);
-router.patch('/orders/:id/status', auth, isAdmin, ctrl.setOrderStatus);
-router.post('/vendors/:userId/approve', auth, isAdmin, ctrl.approveVendor);
-router.get('/vendors/:vendorId/restaurants', auth, isAdmin, ctrl.listVendorRestaurants);
+router.use(protect, restrictTo('admin'));
+
+router.get('/stats', adminController.getStats);
+router.patch('/restaurants/:id/approve', adminController.approveRestaurant);
+router.post('/coupons', adminController.createCoupon);
 
 module.exports = router;

@@ -1,10 +1,11 @@
 const { Router } = require('express');
-const { rateLimit } = require('../middlewares/rateLimiter');
-const ctrl = require('../controllers/auth.controller');
+const authController = require('../controllers/auth.controller');
+
 const router = Router();
 
-router.post('/register', ctrl.register);
-router.post('/login', rateLimit, ctrl.login);
-router.get('/me', require('../middlewares/auth').auth, ctrl.me);
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.post('/otp/send', authController.sendOTP);
+router.post('/otp/verify', authController.verifyOTP);
 
 module.exports = router;

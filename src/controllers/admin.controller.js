@@ -1,26 +1,40 @@
-const svc = require('../services/admin.service');
+const { User, Restaurant, Coupon, Order } = require('../models');
 
-exports.listUsers = async (req, res, next) => {
-  try { res.json(await svc.listUsers(req.query)); }
-  catch (e) { next(e); }
+exports.getStats = async (req, res, next) => {
+  try {
+    const userCount = await User.countDocuments();
+    const restaurantCount = await Restaurant.countDocuments();
+    const orderCount = await Order.countDocuments();
+    const totalRevenue = await Order.aggregate([
+      { $match: { 'payment.status': 'paid' } },
+      { $group: { _id: null, total: { $sum: '$pricing.total' } } }
+    ]);
+
+    res.json({
+      users: userCount,
+      restaurants: restaurantCount,
+      orders: orderCount,
+      revenue: totalRevenue[0]?.total || 0
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.listOrders = async (req, res, next) => {
-  try { res.json(await svc.listOrders(req.query)); }
-  catch (e) { next(e); }
+exports.approveRestaurant = async (req, res, next) => {
+  try {
+    const restaurant = await Restaurant.findByIdAndUpdate(req.params.id, { status: 'active' }, { new: true });
+    res.json(restaurant);
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.setOrderStatus = async (req, res, next) => {
-  try { res.json(await svc.setOrderStatus(req.user.id, req.params.id, req.body.status)); }
-  catch (e) { next(e); }
-};
-
-exports.approveVendor = async (req, res, next) => {
-  try { res.json(await svc.approveVendor(req.user.id, req.params.userId)); }
-  catch (e) { next(e); }
-};
-
-exports.listVendorRestaurants = async (req, res, next) => {
-  try { res.json(await svc.listVendorsRestaurants(req.params.vendorId)); }
-  catch (e) { next(e); }
+exports.createCoupon = async (req, res, next) => {
+  try {
+    const coupon = await Coupon.create(req.body);
+    res.status(201).json(coupon);
+  } catch (err) {
+    next(err);
+  }
 };
