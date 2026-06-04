@@ -1,38 +1,76 @@
-# مستندات API فودغذا فروش
+# مستندات API سامانه فودغذا فروش
 
-تمامی پاسخ‌ها با فرمت JSON ارسال می‌شوند.
+تمامی درخواست‌ها باید دارای هدر `Content-Type: application/json` باشند. برای مسیرهای محافظت شده، توکن JWT باید در هدر `Authorization: Bearer <token>` ارسال شود.
 
-## احراز هویت
-- `POST /api/auth/register`: ثبت‌نام کاربر جدید
-- `POST /api/auth/login`: ورود و دریافت توکن JWT
-- `POST /api/auth/otp/send`: ارسال کد تایید (شبیه‌سازی شده)
-- `POST /api/auth/otp/verify`: تایید کد و دریافت توکن
+## ۱. احراز هویت (Auth)
 
-## رستوران‌ها
-- `GET /api/restaurants`: لیست رستوران‌ها (با فیلتر lat, lng, category, search)
-- `GET /api/restaurants/:slug`: جزئیات رستوران و منو
-- `POST /api/restaurants`: ثبت رستوران جدید (نقش vendor)
+### ثبت‌نام
+- **URL:** `/api/auth/register`
+- **Method:** `POST`
+- **Body:** `{ "fullName", "email", "password", "phone", "role" }`
+- **Roles:** `customer`, `vendor`, `courier`
 
-## سفارشات
-- `POST /api/orders`: ثبت سفارش جدید (نقش customer)
-- `GET /api/orders/my`: لیست سفارشات من
-- `PATCH /api/orders/:id/status`: تغییر وضعیت سفارش
-- `PATCH /api/orders/:id/assign`: پذیرش سفارش توسط پیک
+### ورود
+- **URL:** `/api/auth/login`
+- **Method:** `POST`
+- **Body:** `{ "email", "password" }`
 
-## مدیریت (Admin)
-- `GET /api/admin/stats`: آمار کلی سامانه
-- `PATCH /api/admin/restaurants/:id/approve`: تایید رستوران
-- `POST /api/admin/coupons`: ساخت کد تخفیف جدید
+### ارسال OTP
+- **URL:** `/api/auth/otp/send`
+- **Method:** `POST`
+- **Body:** `{ "phone" }`
 
-## نمونه درخواست (ثبت سفارش)
+## ۲. رستوران‌ها (Restaurants)
+
+### لیست رستوران‌ها
+- **URL:** `/api/restaurants`
+- **Method:** `GET`
+- **Query Params:** `lat`, `lng`, `category`, `search`
+
+### جزئیات رستوران
+- **URL:** `/api/restaurants/:slug`
+- **Method:** `GET`
+
+### ایجاد رستوران (Vendor/Admin)
+- **URL:** `/api/restaurants`
+- **Method:** `POST`
+
+## ۳. منو (Menus)
+
+### لیست دسته‌بندی‌ها
+- **URL:** `/api/menus/:restaurantId/categories`
+- **Method:** `GET`
+
+### افزودن غذای جدید (Vendor)
+- **URL:** `/api/menus/:restaurantId/items`
+- **Method:** `POST`
+
+## ۴. سفارشات (Orders)
+
+### ثبت سفارش
+- **URL:** `/api/orders`
+- **Method:** `POST`
+- **Body:**
 ```json
 {
-  "restaurantId": "ID_HERE",
-  "items": [
-    { "itemId": "ITEM_ID", "titleSnapshot": "پیتزا پپرونی", "priceSnapshot": 220000, "quantity": 1 }
-  ],
-  "pricing": { "subtotal": 220000, "deliveryFee": 20000, "total": 240000 },
-  "delivery": { "address": "تهران، سعادت آباد", "geo": { "coordinates": [51.37, 35.78] } },
+  "restaurantId": "ID",
+  "items": [{ "itemId": "ID", "priceSnapshot": 150000, "quantity": 1 }],
+  "pricing": { "total": 150000 },
+  "delivery": { "address": "...", "geo": { "coordinates": [51, 35] } },
   "paymentMethod": "wallet"
 }
 ```
+
+### تغییر وضعیت سفارش (Vendor/Courier)
+- **URL:** `/api/orders/:id/status`
+- **Method:** `PATCH`
+- **Body:** `{ "status": "preparing" }`
+
+## ۵. مدیریت (Admin)
+
+### آمار کل
+- **URL:** `/api/admin/stats`
+- **Method:** `GET`
+
+---
+برای جزئیات بیشتر به کدهای موجود در پوشه `src/controllers` مراجعه کنید.
